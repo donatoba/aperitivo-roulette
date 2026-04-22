@@ -53,20 +53,15 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("useEffect fired");
-
     if (!navigator.geolocation) {
-      console.log("geolocation not available");
       setLocationStatus("unavailable");
       return;
     }
 
-    console.log("requesting location...");
     setLocationStatus("loading");
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        console.log("got position", position.coords);
         const { latitude, longitude } = position.coords;
         setLocationStatus("fetching");
 
@@ -74,12 +69,10 @@ export default function App() {
           const res = await fetch(
             `/api/spots?lat=${latitude}&lng=${longitude}`
           );
-          console.log("API response status", res.status);
 
           if (!res.ok) throw new Error("API error");
 
           const data = await res.json();
-          console.log("spots returned", data.spots?.length);
 
           if (data.spots && data.spots.length > 0) {
             setSpots(data.spots);
@@ -89,14 +82,12 @@ export default function App() {
             throw new Error("No spots returned");
           }
         } catch (err) {
-          console.log("fetch error", err);
           setSource("static");
           setLocationStatus("fallback");
           setError("Couldn't load live spots — showing our curated list instead.");
         }
       },
       (err) => {
-        console.log("geolocation error", err.code, err.message);
         setSource("static");
         setLocationStatus("fallback");
         setError("Location access denied — showing our curated list instead.");
@@ -210,31 +201,29 @@ export default function App() {
           </div>
         ) : null}
 
-        {source === "google" ? null : (
-          <div className="vibe-section">
-            <p className="vibe-label">
-              Filter by vibe <span>(optional)</span>
-            </p>
-            <div className="vibe-grid">
-              {vibes.map((vibe) => (
-                <button
-                  key={vibe}
-                  onClick={() => toggleVibe(vibe)}
-                  className={`vibe-pill ${
-                    selectedVibes.includes(vibe) ? "vibe-pill-active" : ""
-                  }`}
-                >
-                  {vibeEmoji[vibe]} {vibe}
-                </button>
-              ))}
-            </div>
-            {selectedVibes.length > 0 && (
-              <button onClick={() => setSelectedVibes([])} className="clear-btn">
-                clear filters
+        <div className="vibe-section">
+          <p className="vibe-label">
+            Filter by vibe <span>(optional)</span>
+          </p>
+          <div className="vibe-grid">
+            {vibes.map((vibe) => (
+              <button
+                key={vibe}
+                onClick={() => toggleVibe(vibe)}
+                className={`vibe-pill ${
+                  selectedVibes.includes(vibe) ? "vibe-pill-active" : ""
+                }`}
+              >
+                {vibeEmoji[vibe]} {vibe}
               </button>
-            )}
+            ))}
           </div>
-        )}
+          {selectedVibes.length > 0 && (
+            <button onClick={() => setSelectedVibes([])} className="clear-btn">
+              clear filters
+            </button>
+          )}
+        </div>
 
         {noResults && (
           <p className="no-results">
