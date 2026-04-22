@@ -20,7 +20,8 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,      {
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,23 +31,25 @@ export default async function handler(req, res) {
             {
               parts: [
                 {
-                  text: `You are helping users of an aperitivo bar discovery app called Aperitivo Roulette in Milan, Italy.
+                  text: `You are a helpful assistant for an aperitivo bar app in Milan.
 
-A user has been matched with "${name}" at "${address}" in Milan.
+For the bar "${name}" at "${address}" in Milan, write two things:
+STORY: one compelling sentence about what makes this bar special tonight
+JOKE: one short witty joke about aperitivo or Italian bar culture
 
-Do two things:
-1. Think about what "${name}" in Milan is genuinely famous or notable for — its history, a famous drink it invented, a celebrity connection, the view, the neighbourhood vibe, or anything that makes it special. If it's not a famous bar, say something interesting about its style or neighbourhood.
-2. Write a short witty joke related to drinking, aperitivo, or Italian bar culture.
-
-Respond ONLY with a valid JSON object in this exact format, no preamble, no markdown, no backticks:
-{"story":"one compelling sentence about what makes this bar special, written to convince someone to go tonight","joke":"a short witty joke about drinking, aperitivo, or Italian bar culture"}`,
+Use exactly this format:
+STORY: your sentence here
+JOKE: your joke here`,
                 },
               ],
             },
           ],
           generationConfig: {
             temperature: 0.8,
-            maxOutputTokens: 300,
+            maxOutputTokens: 200,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
           },
         }),
       }
@@ -61,26 +64,32 @@ Respond ONLY with a valid JSON object in this exact format, no preamble, no mark
 
     const data = await response.json();
     const parts = data.candidates?.[0]?.content?.parts || [];
-    const textParts = parts.filter(p => p.text && !p.thought);
-    const text = textParts.map(p => p.text).join("");
+    const text = parts
+      .filter((p) => p.text && !p.thought)
+      .map((p) => p.text)
+      .join("")
+      .trim();
 
     if (!text) {
-    throw new Error("No text response from Gemini: " + JSON.stringify(data).slice(0, 200));
+      throw new Error("Empty response from Gemini");
     }
 
-    const jsonMatch = text.match(/\{[^{}]*"story"[^{}]*"joke"[^{}]*\}/s);
-    if (!jsonMatch) throw new Error("No JSON found in response: " + text.slice(0, 200));
-    const clean = jsonMatch[0].trim();
-    const parsed = JSON.parse(clean);
+    const storyMatch = text.match(/STORY:\s*(.+)/);
+    const jokeMatch = text.match(/JOKE:\s*(.+)/);
 
-    cache[cacheKey] = parsed;
+    const result = {
+      story: storyMatch?.[1]?.trim() || "A legendary Milan aperitivo spot worth discovering tonight.",
+      joke: jokeMatch?.[1]?.trim() || "Why do Italians make the best bartenders? They know how to make everything a little more spritz-tacular.",
+    };
 
-    return res.status(200).json(parsed);
+    cache[cacheKey] = result;
+    return res.status(200).json(result);
+
   } catch (err) {
     return res.status(500).json({
-      error: err.message || "Failed to generate story",
-      story: "A hidden gem worth discovering tonight.",
-      joke: "Why do Italians make the best bartenders? Because they know how to make everything a little more spritz-tacular.",
+      error: err.message,
+      story: "A legendary Milan aperitivo spot worth discovering tonight.",
+      joke: "Why do Italians make the best bartenders? They know how to make everything a little more spritz-tacular.",
     });
   }
 }
