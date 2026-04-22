@@ -67,6 +67,9 @@ Respond ONLY with a valid JSON object in this exact format, no preamble, no mark
     throw new Error("No text response from Gemini: " + JSON.stringify(data).slice(0, 200));
     }
 
+    // temporary debug - remove later
+    throw new Error("RAW TEXT: " + text.slice(0, 300));
+
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("No JSON found in response");
     const clean = jsonMatch[0].trim();
