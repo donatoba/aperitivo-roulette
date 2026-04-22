@@ -66,7 +66,9 @@ Respond ONLY with a valid JSON object in this exact format, no preamble, no mark
       throw new Error("No text response from Gemini");
     }
 
-    const clean = text.replace(/```json|```/g, "").trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No JSON found in response");
+    const clean = jsonMatch[0].trim();
     const parsed = JSON.parse(clean);
 
     cache[cacheKey] = parsed;
