@@ -73,7 +73,7 @@ function ConvinceMe({ name, address }) {
         setStory(data.story);
         setStatus("done");
         cacheRef.current[cacheKey] = data.story;
-      }, 2000);
+      }, 4000);
 
       setStatus("joke");
     } catch (err) {
