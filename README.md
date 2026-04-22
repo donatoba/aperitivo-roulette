@@ -1,16 +1,35 @@
-# React + Vite
+# Aperitivo Roulette 🍸
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A mobile-first web app for Milan locals who can't decide where to go for aperitivo tonight.
 
-Currently, two official plugins are available:
+**Live app:** [aperitivo-roulette.vercel.app](https://aperitivo-roulette.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What it does
 
-## React Compiler
+Pick a vibe (or don't), hit Spin, and let the app pick your bar. No accounts, no endless scrolling, no decision fatigue.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Why I built it
 
-## Expanding the ESLint configuration
+I wanted to learn how to ship a real web app end to end — from local dev to production. This is v1 of a project I plan to keep iterating on.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Stack
+
+- React + Vite
+- Tailwind CSS
+- Static curated dataset of 40 Milan aperitivo spots
+- Deployed on Vercel
+
+## What's next
+
+- [ ] Sort results by distance using browser geolocation
+- [ ] Connect to Google Places API for live data
+- [ ] Add a "copy address" button to share spots easily
+- [ ] Build a ranking algorithm based on vibe match quality
+- [ ] Add photos for each spot
+
+## Running locally
+
+git clone https://github.com/donatoba/aperitivo-roulette.git
+cd aperitivo-roulette
+npm install
+npm run dev
