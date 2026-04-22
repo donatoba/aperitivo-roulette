@@ -61,14 +61,15 @@ Respond ONLY with a valid JSON object in this exact format, no preamble, no mark
 
     const data = await response.json();
     const parts = data.candidates?.[0]?.content?.parts || [];
-    const text = parts.filter(p => p.text).map(p => p.text).join("");
+    const textParts = parts.filter(p => p.text && !p.thought);
+    const text = textParts.map(p => p.text).join("");
 
     if (!text) {
     throw new Error("No text response from Gemini: " + JSON.stringify(data).slice(0, 200));
     }
 
-    const jsonMatch = text.match(/\{[\s\S]*\}(?=[^}]*$)/);
-    if (!jsonMatch) throw new Error("No JSON found in response");
+    const jsonMatch = text.match(/\{[^{}]*"story"[^{}]*"joke"[^{}]*\}/s);
+    if (!jsonMatch) throw new Error("No JSON found in response: " + text.slice(0, 200));
     const clean = jsonMatch[0].trim();
     const parsed = JSON.parse(clean);
 
