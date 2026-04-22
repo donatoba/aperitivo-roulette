@@ -76,7 +76,7 @@ Respond ONLY with a valid JSON object in this exact format, no preamble, no mark
     return res.status(200).json(parsed);
   } catch (err) {
     return res.status(500).json({
-      error: "Failed to generate story",
+      error: err.message || "Failed to generate story",
       story: "A hidden gem worth discovering tonight.",
       joke: "Why do Italians make the best bartenders? Because they know how to make everything a little more spritz-tacular.",
     });
