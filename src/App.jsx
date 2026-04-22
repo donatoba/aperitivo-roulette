@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { spots as staticSpots, vibes } from "./data/spots";
 
 const vibeEmoji = {
@@ -40,6 +40,89 @@ function SourceBadge({ source }) {
       {source === "google" ? "📡 Live from Google Places" : "📋 Curated list"}
     </div>
   );
+}
+
+function ConvinceMe({ name, address }) {
+  const [status, setStatus] = useState("idle");
+  const [joke, setJoke] = useState(null);
+  const [story, setStory] = useState(null);
+  const cacheRef = useRef({});
+
+  async function handleClick() {
+    const cacheKey = `${name}__${address}`;
+
+    if (cacheRef.current[cacheKey]) {
+      setStory(cacheRef.current[cacheKey]);
+      setStatus("done");
+      return;
+    }
+
+    setStatus("loading");
+
+    try {
+      const res = await fetch(
+        `/api/convince?name=${encodeURIComponent(name)}&address=${encodeURIComponent(address)}`
+      );
+
+      if (!res.ok) throw new Error("API error");
+
+      const data = await res.json();
+      setJoke(data.joke);
+
+      setTimeout(() => {
+        setStory(data.story);
+        setStatus("done");
+        cacheRef.current[cacheKey] = data.story;
+      }, 2000);
+
+      setStatus("joke");
+    } catch (err) {
+      setStatus("error");
+    }
+  }
+
+  if (status === "idle") {
+    return (
+      <button onClick={handleClick} className="convince-btn">
+        Convince me 🤌
+      </button>
+    );
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="convince-box convince-loading">
+        <span className="convince-spinner">🍹</span>
+        <p>Researching this bar...</p>
+      </div>
+    );
+  }
+
+  if (status === "joke") {
+    return (
+      <div className="convince-box convince-joke">
+        <p className="convince-joke-label">While we research...</p>
+        <p className="convince-joke-text">{joke}</p>
+      </div>
+    );
+  }
+
+  if (status === "done" && story) {
+    return (
+      <div className="convince-box convince-story">
+        <p className="convince-story-label">Why tonight?</p>
+        <p className="convince-story-text">{story}</p>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="convince-box convince-error">
+        <p>Couldn't find the story — just trust the spin 🎲</p>
+      </div>
+    );
+  }
 }
 
 export default function App() {
@@ -159,6 +242,8 @@ export default function App() {
               ))}
             </div>
           </div>
+
+          <ConvinceMe name={result.name} address={result.address} />
 
           <SourceBadge source={source} />
 
